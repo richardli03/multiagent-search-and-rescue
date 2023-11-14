@@ -36,6 +36,9 @@ def generate_launch_description():
     interfaces_launch_file_dir = os.path.join(
         get_package_share_directory("neato2_gazebo"), "launch"
     )
+    robot_1_name = "alice"
+    robot_2_name = "billy"
+    robot_3_name = "carson"
 
     return LaunchDescription(
         [
@@ -47,6 +50,48 @@ def generate_launch_description():
             robot_name_command,
             GroupAction(
                 actions=[
+                    # ONE OF THESE PER NEATO
+                    IncludeLaunchDescription(
+                        PythonLaunchDescriptionSource(
+                            os.path.join(
+                                interfaces_launch_file_dir, "/bringup_multi.py"
+                            )  # not sure if this path is correct, but uh
+                        ),
+                        launch_arguments={
+                            "robot_name": robot_1_name,
+                            "host": 111111,  # insert correct IP
+                            "udp_video_port": 5001,
+                            "udp_sensor_port": 5002,
+                        }.items(),
+                    ),
+                    # ONE OF THESE PER NEATO
+                    IncludeLaunchDescription(
+                        PythonLaunchDescriptionSource(
+                            os.path.join(
+                                interfaces_launch_file_dir, "/bringup_multi.py"
+                            )  # not sure if this path is correct, but uh
+                        ),
+                        launch_arguments={
+                            "robot_name": robot_2_name,
+                            "host": 111111,  # insert correct IP
+                            "udp_video_port": 5003,
+                            "udp_sensor_port": 5004,
+                        }.items(),
+                    ),
+                    # ONE OF THESE PER NEATO
+                    # IncludeLaunchDescription(
+                    #     PythonLaunchDescriptionSource(
+                    #         os.path.join(
+                    #             interfaces_launch_file_dir, "/bringup_multi.py"
+                    #         )  # not sure if this path is correct, but uh
+                    #     ),
+                    #     launch_arguments={
+                    #         "robot_name": robot_3_name,
+                    #         "host": 111111, #insert correct host
+                    #         "udp_video_port": 5001,
+                    #         "udp_sensor_port": 5002,
+                    #     }.items(),
+                    # ),
                     PushRosNamespace(namespace=robot_name),
                     Node(
                         package="neato_node2",
