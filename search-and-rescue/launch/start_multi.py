@@ -11,13 +11,29 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription, GroupAction
 from launch_ros.actions import Node, PushRosNamespace
 from launch.substitutions import LaunchConfiguration
+import json
 import os
 
 
 def generate_launch_description():
-    robot_1_name = "alice"
-    robot_2_name = "billy"
+    robot_1 = {
+        "name": "ally",
+        "ip": "192.168.16.95",
+        "video_port": "5011",
+        "sensor_port": "7777",
+    }
+    robot_2 = {
+        "name": "billy",
+        "ip": "192.168.16.102",
+        "video_port": "5013",
+        "sensor_port": "7778",
+    }
 
+    robot_1_name = robot_1["name"]
+    robot_1_host = robot_1["ip"]
+    robot_1_video = robot_1["video_port"]
+
+    robot_2_name = "billy"
     robot_3_name = "carson"
 
     interfaces_launch_file_dir = os.path.join(
@@ -38,9 +54,9 @@ def generate_launch_description():
                         launch_arguments={
                             "robot_name": robot_1_name,
                             "host": "192.168.16.95",  # insert correct IP
-                            "udp_video_port": "5011",
+                            "udp_video_port": "5014",
                             "udp_sensor_port": "7777",
-                            # "gscam_config": gscam_config_1,
+                            "gscam_config": "udpsrc port=5014 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
                         }.items(),
                     ),
                     IncludeLaunchDescription(
@@ -52,10 +68,10 @@ def generate_launch_description():
                         ),
                         launch_arguments={
                             "robot_name": robot_2_name,
-                            "host": "192.168.16.102",  # insert correct IP
-                            "udp_video_port": "5013",
-                            "udp_sensor_port": "7778",
-                            # "gscam_config": gscam_config_1,
+                            "host": "192.168.16.73",  # insert correct IP
+                            "udp_video_port": "5011",
+                            "udp_sensor_port": "7779",
+                            "gscam_config": "udpsrc port=5011 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
                         }.items(),
                     ),
                 ]
