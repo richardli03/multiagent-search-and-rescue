@@ -18,7 +18,7 @@ import os
 def generate_launch_description():
     robot_1 = {
         "name": "ally",
-        "ip": "192.168.16.95",
+        "ip": "192.168.16.93",
         "video_port": "5011",
         "sensor_port": "7777",
     }
@@ -34,6 +34,7 @@ def generate_launch_description():
     robot_1_video = robot_1["video_port"]
 
     robot_2_name = "billy"
+    robot_2_host = robot_2["ip"]
     robot_3_name = "carson"
 
     interfaces_launch_file_dir = os.path.join(
@@ -53,10 +54,10 @@ def generate_launch_description():
                         ),
                         launch_arguments={
                             "robot_name": robot_1_name,
-                            "host": "192.168.16.95",  # insert correct IP
-                            "udp_video_port": "5014",
+                            "host": robot_1_host,  # insert correct IP
+                            "udp_video_port": "5011",
                             "udp_sensor_port": "7777",
-                            "gscam_config": "udpsrc port=5014 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
+                            "gscam_config": "udpsrc port=5011 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
                         }.items(),
                     ),
                     IncludeLaunchDescription(
@@ -68,10 +69,10 @@ def generate_launch_description():
                         ),
                         launch_arguments={
                             "robot_name": robot_2_name,
-                            "host": "192.168.16.73",  # insert correct IP
-                            "udp_video_port": "5011",
+                            "host": robot_2_host,  # insert correct IP
+                            "udp_video_port": "5013",
                             "udp_sensor_port": "7779",
-                            "gscam_config": "udpsrc port=5011 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
+                            "gscam_config": "udpsrc port=5013 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
                         }.items(),
                     ),
                 ]
