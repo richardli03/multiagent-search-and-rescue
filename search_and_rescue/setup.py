@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = "search-and-rescue"
+package_name = "search_and_rescue"
 
 setup(
     name=package_name,
@@ -20,6 +20,6 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": [],
+        "console_scripts": ["multimove = search_and_rescue.move_multi:main"],
     },
 )
