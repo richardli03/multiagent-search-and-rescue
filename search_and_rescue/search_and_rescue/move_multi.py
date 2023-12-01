@@ -7,7 +7,13 @@ from numpy import pi
 from .constants import Names
 
 
-class Multimove(Node):
+class MultiMover(Node):
+    """Defining an interface class that makes it easy and intuitive to move multiple robots
+
+    :param Node: _description_
+    :type Node: _type_
+    """
+
     def __init__(self):
         super().__init__("move_multi")
         self.publisher = self.create_publisher(String, "greetings", 10)
@@ -16,7 +22,7 @@ class Multimove(Node):
         timer_period = 1
         self.timer = self.create_timer(timer_period, self.run_loop)
 
-    def move(self, lin, ang, robot_name: Names):
+    def move(self, lin: float, ang: float, robot_name: Names):
         """Move the robot with some linear velocity and some angular velocity.
 
         Automatically converts the input to a float(as the Twist() message
@@ -24,9 +30,9 @@ class Multimove(Node):
         that will move the robot accordingly.
 
         :param lin: the linear velocity to give the robot
-        :type lin: int
-        :param ang: _description_
-        :type ang: _type_
+        :type lin: float
+        :param ang: the angular velocity to give the robot
+        :type ang: float
         """
         msg = Twist()
         msg.linear.x = float(lin)
@@ -39,27 +45,66 @@ class Multimove(Node):
             raise Exception(f"name {robot_name} isn't valid!")
 
     def turn_left(self, robot_name: Names, angular_vel=0.3):
-        """Turn the robot some number of degrees to the left.
+        """Turn a specified robot some number of degrees to the left.
 
+        :param robot_name: the name of the robot to drive
+        :type robot_name: Names
         :param angle: angle in degrees
         :type angle: int
         """
         self.move(0.0, angular_vel, robot_name)
         # self.move(0.0, 0.0, robot_name)
 
+    def turn_right(self, robot_name: Names, angular_vel=-0.3):
+        """Turn a specified robot some number of degrees to the right.
+
+        :param robot_name: the name of the robot to drive
+        :type robot_name: Names
+        :param angle: angle in degrees
+        :type angle: int
+        """
+        self.move(0.0, angular_vel, robot_name)
+
+    def drive(self, robot_name: Names, linear_vel=0.2):
+        """Drive a specified robot forward
+
+        :param robot_name: the name of the robot to drive
+        :type robot_name: Names
+        :param linear_vel: the speed at which to drive, defaults to 0.2
+        :type linear_vel: float, optional
+        """
+        self.move(linear_vel, 0.0, robot_name)
+
+    def stop(self, robot_name: Names):
+        """Stop a specified robot
+
+        :param robot_name: the name of the robot to stop
+        :type robot_name: Names
+        """
+        self.move(0.0, 0.0, robot_name)
+
     def run_loop(self):
-        self.turn_left(Names.ALLY)
-        self.turn_left(Names.BILLY)
+        for _ in range(4):
+            self.turn_left(Names.ALLY)
+            self.turn_left(Names.BILLY)
+            sleep(3)
 
-        self.move(0, 0, Names.ALLY)
-        self.move(0, 0, Names.BILLY)
+            self.turn_left(Names.ALLY)
+            self.turn_left(Names.BILLY)
+            sleep(3)
+            self.stop(Names.ALLY)
+            sleep(1)
+            self.stop(Names.BILLY)
+            # self.drive(Names.ALLY)
 
-        sleep(3)
+            self.stop(Names.BILLY)
+
+        self.destroy_timer(self.timer)
 
 
 def main(args=None):
     rclpy.init(args=args)  # init the node
-    node = Multimove()
+    node = MultiMover()
     rclpy.spin(node)  # starts up the node
     rclpy.shutdown()  # if it finishes, it'll shutdown
 
