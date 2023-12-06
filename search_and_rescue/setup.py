@@ -11,6 +11,7 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         ("share/" + package_name, ["launch/start_multi.py"]),
         ("share/" + package_name, ["launch/bringup_multi.py"]),
+        ("share/" + package_name, ["launch/launch_map_server.py"]),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -20,6 +21,10 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["multimove = search_and_rescue.move_multi:main"],
+        "console_scripts": [
+            "multimove = search_and_rescue.move_multi:main",
+            "load_map = search_and_rescue.load_map:main",
+            "occupancy_field = search_and_rescue.occupancy_field:main",
+        ],
     },
 )
