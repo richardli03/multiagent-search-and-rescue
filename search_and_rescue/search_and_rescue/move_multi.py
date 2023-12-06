@@ -16,7 +16,6 @@ class MultiMover(Node):
 
     def __init__(self):
         super().__init__("move_multi")
-        self.publisher = self.create_publisher(String, "greetings", 10)
         self.ally_vel = self.create_publisher(Twist, "ally/cmd_vel", 10)
         self.billy_vel = self.create_publisher(Twist, "billy/cmd_vel", 10)
         timer_period = 1
