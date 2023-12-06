@@ -1,13 +1,18 @@
 import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
+from std_msgs.msg import MultiArrayDimension, UInt8MultiArray
 from geometry_msgs.msg import Pose
 import odom_helper as od
 import numpy as np
+from search_and_rescue/load_map import LoadMap
 
-numneato = 5
+numneato = 5 # will be in the launch file, specifying how many neatos there are 
 
 class Brain(Node):
+    """
+    
+    """
     def __init__(self):
         super().__init__('main brain')
         self.map_1_init_pose = [] # the initial starting point of each neato 
@@ -17,8 +22,47 @@ class Brain(Node):
         self.map_2_pose = []
         self.map_3_pose = []
 
+        # making subscriptions for every neato we have 
         for i in range():
-            self_subscriber = self.create_subscription(Odometry, f"neato{i}/odom", self.ruhroh(i),10)
+            self.subscriber = self.create_subscription(Odometry, f"neato{i}/odom", self.ruhroh(i),10)
+            self.publisher = self.create_publisher(UInt8MultiArray, f"neato{i}/map_path", 10)
+
+
+    def split_map(self,numneato):
+        """
+        Given a value of how many neatos are "searching", split the map evenly amongst them then publish the boundaries to each corresponding neato.
+            Args:
+        numneato: An integer representing the number of neatos that will be searching the map.
+
+        """
+        rclpy.init()
+        n = LoadMap() # anmol's map generating node 
+
+        # given in number of pixels, or number of "0s" in the matrix 
+        width_pixels = n.get_map().width
+        height_pixels = n.get_amp().height
+
+        # dimensions in meters 
+        # the space between pixels is the num meters irl on map (determined by resolution) 
+        map_width = (width_pixels - 1) * n.resolution 
+        map_height = (height_pixels - 1) * n.resolution
+
+        # how much distance given to each neato 
+        width_per_neato = map_width / numneato
+        height_per_neato = map_height / numneato
+
+        # publishing to each neato its obunds 
+        map_bounds_neato1 = UInt8MultiArray()
+
+        map_bounds_neato1.layout.dim.append(MultiArrayDimension())
+        map_bounds_neato1.layout.dim[0].size = 8 # how many elements we input 
+        map_bounds_neato1.layout.dim[0].stride = 2 # the number of integers skipped to go to next line of array 
+        map_bounds_neato1.data = [0, 0, width_per_neato, 0, 0, height_per_neato, height_per_neato, height_per_neato] # order: bot left corner, bot right corner, top left corner, top right corner
+
+        rclpy.loginfo("Publishing bounds data: {}".format(map_bounds_neato1.data))
+        self.publisher.publish(map_bounds_neato1)
+        # giving each neato its bounds in terms of its own odom frame (aka, since mvp all starts the neatos where we want them, i give them all the same coord bounding boxes)
+
 
     
     def ruhroh(self, i):
@@ -153,6 +197,15 @@ class Brain(Node):
         
         return 
 
+
+    def main(args=None):
+
+        rclpy.spin(n)
+        rclpy.shutdown()
+
+
+    if __name__ == "__main__":
+        main()
        
 self.create_subscription(LaserScan, self.scan_topic, self.scan_received, 10)
 
