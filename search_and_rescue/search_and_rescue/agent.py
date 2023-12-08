@@ -29,9 +29,9 @@ class State(Enum):
     COMPLETE_SERACH = "Completed area search"
 
 
-class Lawnmower(Node):
+class Agent(Node):
     def __init__(self):
-        super().__init__("lawnmower")
+        super().__init__("agent")
         self.odom_sub = self.create_subscription(
             Odometry, "odom", self.process_odom, 10
         )
@@ -222,7 +222,7 @@ class Lawnmower(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = Lawnmower()
+    node = Agent()
     rclpy.spin(node)
     rclpy.shutdown()
 
