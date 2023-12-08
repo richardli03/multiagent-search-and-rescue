@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Header
-from .odom_helper import euler_from_quaternion
+from odom_helper import euler_from_quaternion
 from enum import Enum
 import math 
 import time
@@ -11,13 +11,14 @@ from nav_msgs.msg import Odometry
 NEOTO_LENGTH = .5
 
 class State(Enum): 
-    MOVE_STRAIGHT_X_RIGHT = "move straight in x direction"
-    MOVE_STRAIGHT_X_LEFT = "move straight in x direction"
-    MOVE_STRAIGHT_Y = "move straight in y direction"
-    TURN_lEFT_2 = "Turn 90 degrees left"
-    TURN_RIGHT_2 = "Turn 90 degrees right"
-    TURN_lEFT_1 = "Turn 90 degrees left"
-    TURN_RIGHT_1 = "Turn 90 degrees right"
+    MOVE_STRAIGHT_X_RIGHT = "move straight in x direction right"
+    MOVE_STRAIGHT_X_LEFT = "move straight in x direction left"
+    MOVE_STRAIGHT_Y_LEFT = "move straight in y direction wiht next turn left"
+    MOVE_STRAIGHT_Y_RIGHT = "move straight in y direction wiht next turn right"
+    TURN_lEFT_2 = "Turn 90 degrees left 2"
+    TURN_RIGHT_2 = "Turn 90 degrees right 2"
+    TURN_lEFT_1 = "Turn 90 degrees left 1"
+    TURN_RIGHT_1 = "Turn 90 degrees right 1"
     FOUND_OBJECT = "Found object"
     COMPLETE_SERACH = "Completed area search"
 
@@ -37,10 +38,10 @@ class Lawnmower(Node):
         self.current_x = 0
         self.current_y = 0
         self.next_y = 0
-        self.max_x = 1
+        self.max_x = 2
         self.max_y = 5
-        self.linear_speed = 0.3 # CHANGE VALUE 
-        self.angular_speed = 0.1
+        self.linear_speed = 0.5 # CHANGE VALUE 
+        self.angular_speed = 0.5
         self.init_angle = 0
         self.current_angle = 0
         ## orienting robot in direction of most weighted/closest objects 
@@ -64,7 +65,7 @@ class Lawnmower(Node):
         '''
         Move right 
         '''
-        self.move.angular.z = self.angular_speed
+        self.move.angular.z = self.angular_speed * -1
         self.move.linear.x = 0.0 
         self.publisher.publish(self.move)
 
@@ -99,48 +100,50 @@ class Lawnmower(Node):
             self.state = State.COMPLETE_SERACH
         # Search Loop
         if self.state == State.MOVE_STRAIGHT_X_RIGHT and self.current_x >= self.max_x: 
+            print("SWITCH TO TURN LEFT 1")
             self.state = State.TURN_lEFT_1
         elif self.state == State.TURN_lEFT_1 and self.current_angle >= 90: 
-            self.state = State.MOVE_STRAIGHT_Y
+            print("SWITCH TO TURN MOVE STRAIGHT Y")
+            self.state = State.MOVE_STRAIGHT_Y_LEFT
             self.next_y = self.current_y + NEOTO_LENGTH
-        elif self.state == State.MOVE_STRAIGHT_Y and self.current_y >= self.next_y: 
+        elif self.state == State.MOVE_STRAIGHT_Y_LEFT and self.current_y >= self.next_y: 
+            print("SWITCH TURN LEFT 2")
             self.state = State.TURN_lEFT_2
-        elif self.state == State.TURN_lEFT_2 and self.current_angle >= 180:
+        elif self.state == State.TURN_lEFT_2 and self.current_angle <= 0:
+            print("SWITCH TURN MOVE STRAIGHT X LEFT ")
+            print(f"Current Angle: {self.current_angle} --SWITCH")
             self.state = State.MOVE_STRAIGHT_X_LEFT
         elif self.state == State.MOVE_STRAIGHT_X_LEFT and self.current_x <= self.init_x: 
             self.state = State.TURN_RIGHT_1
-        elif self.state == State.TURN_RIGHT_1 and self.current_angle >= 90: 
-            self.state = State.MOVE_STRAIGHT_Y
+        elif self.state == State.TURN_RIGHT_1 and self.current_angle <= 90: 
+            self.state = State.MOVE_STRAIGHT_Y_RIGHT
             self.next_y = self.current_y + NEOTO_LENGTH
-        elif self.state == State.MOVE_STRAIGHT_Y and self.current_y >= self.next_y: 
+        elif self.state == State.MOVE_STRAIGHT_Y_RIGHT and self.current_y >= self.next_y: 
             self.state = State.TURN_RIGHT_2
-        elif self.state == State.TURN_RIGHT_2 and self.current_angle >= 0:
+        elif self.state == State.TURN_RIGHT_2 and self.current_angle <= 0:
             self.state = State.MOVE_STRAIGHT_X_RIGHT
 
     def run_loop(self):
         '''
         Switches state from predator to prey when the robot "tags" something/someone.
         '''
-
-    
         new_pose : Odometry= self.odom
     
         if new_pose is None: 
             return
-        
         self.current_x = new_pose.pose.pose.position.x
         self.current_y = new_pose.pose.pose.position.y
         print(f"pos: {self.current_x}, {self.current_y}\n")
         _, _, yaw_z  = euler_from_quaternion(new_pose.pose.pose.orientation.x,new_pose.pose.pose.orientation.y, new_pose.pose.pose.orientation.z, new_pose.pose.pose.orientation.w)
         self.current_angle = yaw_z * 180 / math.pi
         print(f"angle: {self.current_angle}")
+        self.choose_state()
         print(self.state)
-        self.check_object()
         match self.state:
             case State.MOVE_STRAIGHT_X_LEFT:
                 self.move_straight()
             case State.MOVE_STRAIGHT_X_RIGHT:
-                self.move_straight_X()
+                self.move_straight()
             case State.TURN_RIGHT_1:
                 self.turn_right()
             case State.TURN_lEFT_1:
@@ -149,15 +152,17 @@ class Lawnmower(Node):
                 self.turn_right()
             case State.TURN_lEFT_2:
                 self.turn_left()
-            case State.MOVE_STRAIGHT_Y:
+            case State.MOVE_STRAIGHT_Y_LEFT:
                 self.move_straight()
+            case State.MOVE_STRAIGHT_Y_RIGHT:
+                self.move_straight()   
             case State.FOUND_OBJECT: 
                 self.find_object()
             case State.COMPLETE_SERACH: 
                 self.complete_search()
             case default:
                 raise Exception("Robot not in valid state.")
-        self.choose_state()
+
 def main(args=None):
     rclpy.init(args=args)
     node = Lawnmower()
