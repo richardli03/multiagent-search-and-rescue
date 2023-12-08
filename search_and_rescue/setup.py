@@ -24,7 +24,6 @@ setup(
         "console_scripts": [
             "multimove = search_and_rescue.move_multi:main",
             "load_map = search_and_rescue.load_map:main",
-            "occupancy_field = search_and_rescue.occupancy_field:main",
         ],
     },
 )
