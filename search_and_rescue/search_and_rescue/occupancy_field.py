@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.neighbors import NearestNeighbors
 import pickle
 
-class LoadMap(object):
+class OccupancyField(object):
     """ Stores an occupancy field for an input map.  An occupancy field returns
         the distance to the closest obstacle for any coordinate in the map
         Attributes:
@@ -21,17 +21,13 @@ class LoadMap(object):
     def __init__(self, node):
         # grab the map from the map server
         self.cli = node.create_client(GetMap, 'map_server/map')
+        self.saver = node.create_client(SaveMap, 'map_saver/save_map')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             node.get_logger().info('service not available, waiting again...')
         self.future = self.cli.call_async(GetMap.Request())
         rclpy.spin_until_future_complete(node, self.future)
-
         self.map = self.future.result().map
         node.get_logger().info("map received width: {0} height: {1}".format(self.map.info.width, self.map.info.height))
-        self.map_width = self.map.info.width
-        self.map_height = self.map.info.height
-        self.map_resolution = self.map.info.resolution
-        self.map_origin = self.map.info.origin
 
         map_topic_publisher = node.create_publisher(OccupancyGrid, '/map', 10)
         map_topic_publisher.publish(self.map)
