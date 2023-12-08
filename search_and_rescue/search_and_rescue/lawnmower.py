@@ -15,9 +15,9 @@ class State(Enum):
     MOVE_STRAIGHT_X_LEFT = "move straight in x direction left"
     MOVE_STRAIGHT_Y_LEFT = "move straight in y direction wiht next turn left"
     MOVE_STRAIGHT_Y_RIGHT = "move straight in y direction wiht next turn right"
-    TURN_lEFT_2 = "Turn 90 degrees left 2"
+    TURN_LEFT_2 = "Turn 90 degrees left 2"
     TURN_RIGHT_2 = "Turn 90 degrees right 2"
-    TURN_lEFT_1 = "Turn 90 degrees left 1"
+    TURN_LEFT_1 = "Turn 90 degrees left 1"
     TURN_RIGHT_1 = "Turn 90 degrees right 1"
     FOUND_OBJECT = "Found object"
     COMPLETE_SERACH = "Completed area search"
@@ -103,19 +103,19 @@ class Lawnmower(Node):
         if self.state == State.MOVE_STRAIGHT_X_RIGHT and self.distance_diff < self.threshold:
             print(self.distance_diff)
             print("SWITCH TO TURN LEFT 1")
-            self.state = State.TURN_lEFT_1
+            self.state = State.TURN_LEFT_1
             self.next_angle = self.current_angle + math.pi/2
             print(f"Next angle: {self.next_angle * 180 / math.pi}")
-        elif self.state == State.TURN_lEFT_1 and abs(self.angle_diff) < self.threshold : 
+        elif self.state == State.TURN_LEFT_1 and abs(self.angle_diff) < self.threshold : 
             print("SWITCH TO TURN MOVE STRAIGHT Y") 
             self.state = State.MOVE_STRAIGHT_Y_LEFT
             self.next_y = self.current_y + NEOTO_LENGTH
         elif self.state == State.MOVE_STRAIGHT_Y_LEFT and self.distance_diff < self.threshold: 
             print("SWITCH TURN LEFT 2")
-            self.state = State.TURN_lEFT_2
+            self.state = State.TURN_LEFT_2
             self.next_angle = self.current_angle + math.pi/2 
             print(f"Next angle: {self.next_angle * 180 / math.pi}")
-        elif self.state == State.TURN_lEFT_2 and abs(self.angle_diff) < self.threshold:
+        elif self.state == State.TURN_LEFT_2 and abs(self.angle_diff) < self.threshold:
             print("SWITCH TURN MOVE STRAIGHT X LEFT ")
             print(f"Current Angle: {self.current_angle} --SWITCH")
             self.state = State.MOVE_STRAIGHT_X_LEFT
@@ -162,7 +162,7 @@ class Lawnmower(Node):
                 self.angle_diff = angle_diff(self.current_angle, self.next_angle)
                 print(f"angle diff: {self.angle_diff * 180 / math.pi}")
                 self.turn()
-            case State.TURN_lEFT_1:
+            case State.TURN_LEFT_1:
                 self.angle_diff = angle_diff(self.current_angle, self.next_angle)
                 print(f"angle diff: {self.angle_diff * 180 / math.pi}")
                 self.turn()
@@ -170,7 +170,7 @@ class Lawnmower(Node):
                 self.angle_diff = angle_diff(self.current_angle, self.next_angle)
                 print(f"angle diff: {self.angle_diff * 180 / math.pi}")
                 self.turn()
-            case State.TURN_lEFT_2:
+            case State.TURN_LEFT_2:
                 self.angle_diff = angle_diff(self.current_angle, self.next_angle)
                 print(f"angle diff: {self.angle_diff * 180 / math.pi}")
                 self.turn()
