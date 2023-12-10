@@ -8,7 +8,7 @@ import math
 import time
 from nav_msgs.msg import Odometry
 
-NEOTO_LENGTH = .5
+NEATO_LENGTH = .5
 
 class State(Enum): 
     MOVE_STRAIGHT_X_RIGHT = "move straight in x direction right"
@@ -20,9 +20,10 @@ class State(Enum):
     TURN_LEFT_1 = "Turn 90 degrees left 1"
     TURN_RIGHT_1 = "Turn 90 degrees right 1"
     FOUND_OBJECT = "Found object"
-    COMPLETE_SERACH = "Completed area search"
+    COMPLETE_SEARCH = "Completed area search"
 
 class Lawnmower(Node):
+
     def __init__(self):
         super().__init__('lawnmower')
         self.odom_sub = self.create_subscription(Odometry, 'odom', self.process_odom, 10)
@@ -54,19 +55,26 @@ class Lawnmower(Node):
         self.angle_diff = math.pi / 2 
 
 
-    def process_odom(self, odom):
-        self.odom = odom 
+    def process_odom(self, msg: Odometry):
+        '''
+        subscribes to odom topic and sets robot's own odom to a variable in node.
+        
+        Args:
+            - odom: A message of type Odometry 
+        '''
+        self.odom = msg 
 
     def move_straight(self):
         '''
-        Moves robot straight
+        When called, will make the robot drive straight by publishing to cmd_vel.
         '''
         self.move.angular.z = 0.0
         self.move.linear.x = self.linear_speed * self.distance_diff
         self.publisher.publish(self.move)
+
     def turn(self):
         '''
-        turn based on angle diff 
+        When called, will make the robot turn based on angle difference.
         '''
         self.move.angular.z = self.angular_speed * self.angle_diff * -1
         self.move.linear.x = 0.0 
@@ -74,31 +82,40 @@ class Lawnmower(Node):
 
     def check_object(self):
         '''
-        Check if the object is in the current area 
+        Checks if the object/person to be found is in the current area. 
         '''
         if self.object_x == self.current_x and self.object_y == self.current_y: 
             return True 
         return False
+    
     def find_object(self): 
         """
-        Publish message to main brain 
+        Publish message to main brain indicating that a person is found.
         """
         self.move.angular.z = 0.0
         self.move.linear.x = 0.0 
         self.publisher.publish(self.move)
-        print("Send coordiante to main brain, activating other robots to move to locaization")
+        print("Send coordinate to main brain, activating other robots to move to localization")
+
     def complete_search(self):
+        '''
+        Publishes message to main brain that robot has completed the search in the area assigned.
+        '''
         self.move.angular.z = 0.0
         self.move.linear.x = 0.0 
         self.publisher.publish(self.move)
         print("Send message that area assigned is searched")
-    def choose_state(self): 
 
+    def choose_state(self): 
+        '''
+        State machine function that chooses the robot's "state" of movement based on its position on the map/area it is searching, and its previous state. 
+        '''
         # Final States
         if self.check_object(): 
             self.state = State.FOUND_OBJECT
         if self.next_y >= self.max_y:
-            self.state = State.COMPLETE_SERACH
+            self.state = State.COMPLETE_SEARCH
+
         # Search Loop
         if self.state == State.MOVE_STRAIGHT_X_RIGHT and self.distance_diff < self.threshold:
             print(self.distance_diff)
@@ -106,47 +123,58 @@ class Lawnmower(Node):
             self.state = State.TURN_LEFT_1
             self.next_angle = self.current_angle + math.pi/2
             print(f"Next angle: {self.next_angle * 180 / math.pi}")
+
         elif self.state == State.TURN_LEFT_1 and abs(self.angle_diff) < self.threshold : 
             print("SWITCH TO TURN MOVE STRAIGHT Y") 
             self.state = State.MOVE_STRAIGHT_Y_LEFT
-            self.next_y = self.current_y + NEOTO_LENGTH
+            self.next_y = self.current_y + NEATO_LENGTH
+
         elif self.state == State.MOVE_STRAIGHT_Y_LEFT and self.distance_diff < self.threshold: 
             print("SWITCH TURN LEFT 2")
             self.state = State.TURN_LEFT_2
             self.next_angle = self.current_angle + math.pi/2 
             print(f"Next angle: {self.next_angle * 180 / math.pi}")
+
         elif self.state == State.TURN_LEFT_2 and abs(self.angle_diff) < self.threshold:
             print("SWITCH TURN MOVE STRAIGHT X LEFT ")
             print(f"Current Angle: {self.current_angle} --SWITCH")
             self.state = State.MOVE_STRAIGHT_X_LEFT
+
         elif self.state == State.MOVE_STRAIGHT_X_LEFT and self.distance_diff < self.threshold: 
             self.state = State.TURN_RIGHT_1
             self.next_angle = self.current_angle - math.pi/2 
             print(f"Next angle: {self.next_angle * 180 / math.pi}")
+
         elif self.state == State.TURN_RIGHT_1 and abs(self.angle_diff) < self.threshold: 
             self.state = State.MOVE_STRAIGHT_Y_RIGHT
-            self.next_y = self.current_y + NEOTO_LENGTH
+            self.next_y = self.current_y + NEATO_LENGTH
+
         elif self.state == State.MOVE_STRAIGHT_Y_RIGHT and self.distance_diff < self.threshold: 
             self.state = State.TURN_RIGHT_2
             self.next_angle = self.current_angle - math.pi/2 
             print(f"Next angle: {self.next_angle * 180 / math.pi}")
+
         elif self.state == State.TURN_RIGHT_2 and abs(self.angle_diff) < self.threshold:
             self.state = State.MOVE_STRAIGHT_X_RIGHT
 
     def run_loop(self):
         '''
-        Switches state from predator to prey when the robot "tags" something/someone.
+        Function that loops the behaviors of the robot, aka the "lawnmover" behavior. Identifying state of robot, and moving it accordingly.  
         '''
+        # re-getting odom pose from odom topic, and saving as the new pose 
         new_pose : Odometry= self.odom
-    
         if new_pose is None: 
             return
+        
+        # extracting current x and y from odom pose 
         self.current_x = new_pose.pose.pose.position.x
         self.current_y = new_pose.pose.pose.position.y
         print(f"pos: {self.current_x}, {self.current_y}\n")
         _, _, yaw_z  = euler_from_quaternion(new_pose.pose.pose.orientation.x,new_pose.pose.pose.orientation.y, new_pose.pose.pose.orientation.z, new_pose.pose.pose.orientation.w)
         self.current_angle = yaw_z 
         print(f"angle: {self.current_angle * 180 / math.pi}")
+
+        # calling choose state to get robot movement started, then moving robot accordingly.
         self.choose_state()
         print(self.state)
         match self.state:
@@ -184,7 +212,7 @@ class Lawnmower(Node):
                 self.move_straight()   
             case State.FOUND_OBJECT: 
                 self.find_object()
-            case State.COMPLETE_SERACH: 
+            case State.COMPLETE_SEARCH: 
                 self.complete_search()
             case default:
                 raise Exception("Robot not in valid state.")
