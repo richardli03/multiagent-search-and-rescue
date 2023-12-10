@@ -8,7 +8,6 @@ import numpy as np
 from .load_map import LoadMap
 from .constants import Names
 
-numneato = 5 # will be in the launch file, specifying how many neatos there are 
 
 class Brain(Node):
     """
@@ -223,7 +222,7 @@ class Brain(Node):
         A looped function that is used to test/run the functions.
         """
         print("hi!")
-        self.split_map(5)
+        self.split_map(2)
 
 
 
