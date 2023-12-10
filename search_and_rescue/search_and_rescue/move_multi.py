@@ -16,7 +16,6 @@ class MultiMover(Node):
 
     def __init__(self):
         super().__init__("move_multi")
-        self.publisher = self.create_publisher(String, "greetings", 10)
         self.ally_vel = self.create_publisher(Twist, "ally/cmd_vel", 10)
         self.billy_vel = self.create_publisher(Twist, "billy/cmd_vel", 10)
         timer_period = 1
@@ -65,7 +64,7 @@ class MultiMover(Node):
         """
         self.move(0.0, angular_vel, robot_name)
 
-    def drive(self, robot_name: Names, linear_vel=0.2):
+    def drive_forward(self, robot_name: Names, linear_vel=0.2):
         """Drive a specified robot forward
 
         :param robot_name: the name of the robot to drive
@@ -84,20 +83,11 @@ class MultiMover(Node):
         self.move(0.0, 0.0, robot_name)
 
     def run_loop(self):
-        for _ in range(4):
+        i = 0
+        while i < 100:
             self.turn_left(Names.ALLY)
             self.turn_left(Names.BILLY)
-            sleep(3)
-
-            self.turn_left(Names.ALLY)
-            self.turn_left(Names.BILLY)
-            sleep(3)
-            self.stop(Names.ALLY)
-            sleep(1)
-            self.stop(Names.BILLY)
-            # self.drive(Names.ALLY)
-
-            self.stop(Names.BILLY)
+            sleep(0.1)
 
         self.destroy_timer(self.timer)
 
