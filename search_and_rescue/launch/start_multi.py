@@ -18,24 +18,16 @@ import os
 def generate_launch_description():
     robot_1 = {
         "name": "ally",
-        "ip": "192.168.16.93",
+        "ip": "192.168.16.64",
         "video_port": "5011",
         "sensor_port": "7777",
     }
     robot_2 = {
         "name": "billy",
-        "ip": "192.168.16.102",
+        "ip": "192.168.16.55",
         "video_port": "5013",
         "sensor_port": "7778",
     }
-
-    robot_1_name = robot_1["name"]
-    robot_1_host = robot_1["ip"]
-    robot_1_video = robot_1["video_port"]
-
-    robot_2_name = "billy"
-    robot_2_host = robot_2["ip"]
-    robot_3_name = "carson"
 
     interfaces_launch_file_dir = os.path.join(
         get_package_share_directory("search_and_rescue"), ""
@@ -53,11 +45,11 @@ def generate_launch_description():
                             )  # not sure if this path is correct, but uh
                         ),
                         launch_arguments={
-                            "robot_name": robot_1_name,
-                            "host": robot_1_host,  # insert correct IP
-                            "udp_video_port": "5011",
-                            "udp_sensor_port": "7777",
-                            "gscam_config": "udpsrc port=5011 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
+                            "robot_name": robot_1["name"],
+                            "host": robot_1["ip"],  # insert correct IP
+                            "udp_video_port": robot_1["video_port"],
+                            "udp_sensor_port": robot_1["sensor_port"],
+                            "gscam_config": f"udpsrc port={robot_1['video_port']} ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
                         }.items(),
                     ),
                     IncludeLaunchDescription(
@@ -68,12 +60,38 @@ def generate_launch_description():
                             )  # not sure if this path is correct, but uh
                         ),
                         launch_arguments={
-                            "robot_name": robot_2_name,
-                            "host": robot_2_host,  # insert correct IP
-                            "udp_video_port": "5013",
-                            "udp_sensor_port": "7779",
-                            "gscam_config": "udpsrc port=5013 ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
+                            "robot_name": robot_2["name"],
+                            "host": robot_2["ip"],  # insert correct IP
+                            "udp_video_port": robot_2["video_port"],
+                            "udp_sensor_port": robot_2["sensor_port"],
+                            "gscam_config": f"udpsrc port={robot_2['video_port']} ! application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264  ! videoconvert",
                         }.items(),
+                    ),
+                    Node(
+                        package="search_and_rescue",
+                        executable="agent",
+                        name="mvmt",
+                        remappings=[
+                            ("/cmd_vel", "ally/cmd_vel"),
+                            ("/odom", "ally/odom"),
+                        ],
+                        output={
+                            "stdout": "screen",
+                            "stderr": "screen",
+                        },
+                    ),
+                    Node(
+                        package="search_and_rescue",
+                        executable="agent",
+                        name="mvmt2",
+                        remappings=[
+                            ("/cmd_vel", "billy/cmd_vel"),
+                            ("/odom", "billy/odom"),
+                        ],
+                        output={
+                            "stdout": "screen",
+                            "stderr": "screen",
+                        },
                     ),
                 ]
             ),
