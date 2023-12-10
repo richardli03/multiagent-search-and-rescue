@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Header
+from std_msgs.msg import UInt32MultiArray
 from search_and_rescue.odom_helper import (
     euler_from_quaternion,
     angle_diff,
@@ -38,10 +38,7 @@ class Agent(Node):
         self.odom = None
         self.state = State.MOVE_STRAIGHT_X_RIGHT
         self.publisher = self.create_publisher(Twist, "cmd_vel", 10)
-        self.move = Twist()
-        self.scan_msg = None
-        # Hard coded now, but brain will control later
-        # in meters
+        self.brain_sub = self.create_subscription(UInt32MultiArray, "map_path", self.parse_map_bounds, 10)
         self.init_x = 0
         self.init_y = 0
         self.current_x = 0
@@ -70,6 +67,17 @@ class Agent(Node):
             - odom: A message of type Odometry 
         '''
         self.odom = msg 
+
+    def parse_map_bounds(self, msg : UInt32MultiArray):
+        """
+        A callback function that , given messages from the brain of what neato's bounds are via topic, parses the data and save it.
+
+        Args:
+            - msg: A message type UInt32MultiArray and 2 integer array from topic "WHAT IS TOPIC NAME" that gives the coordinates of
+            neato's bounds in odom frame. 
+        """
+        self.max_x = msg.data[0]
+        self.max_y = msg.data[1]
 
     def move_straight(self):
         '''
