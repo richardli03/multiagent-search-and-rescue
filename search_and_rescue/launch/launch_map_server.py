@@ -8,7 +8,8 @@ from launch.substitutions import LaunchConfiguration
 import os
 
 def generate_launch_description():
-    map_file = DeclareLaunchArgument('map_yaml')
+    path_to_user = os.path.expanduser('~')
+    map_file = DeclareLaunchArgument('map_yaml', default_value=path_to_user + '/ros2_ws/src/multiagent-search-and-rescue/search_and_rescue/maps/new_map.yaml')
 
     lifecycle_nodes = ['map_server']
     use_sim_time = DeclareLaunchArgument('use_sim_time', default_value="true")
