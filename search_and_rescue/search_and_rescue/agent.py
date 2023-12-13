@@ -44,13 +44,13 @@ class Agent(Node):
         - angular_speed: the velocity that the robot will turn at.
         - next_y: the y-coordinate that the robot will go to next in the odometry frame.
         - next_angle: the next angle that the robot will turn to in the odometry frame. 
-        - threshold: 
-        - move: 
+        - threshold: the distance difference from the max bound that the robot is when we start to stop the robot from moving. 
+        - object_x: x-coordinate of the object we are trying to find, is temporariliy hard-coded for the sake of testing the "object found" state.
+        - object_y: y-coordinate of the object we are trying to find, is temporariliy hard-coded for the sake of testing the "object found" state.
+        - move: a Twist object to publish movement messages to cmd_vel.
         - state: a variable storing the initial movement state of the robot.
-        - object_x: 
-        - object_y: 
-        - distance_diff: 
-        - angle_diff: 
+        - distance_diff: an integer representing how far the robot's x-coordinate is from its initial x-coordinate (starting point).
+        - angle_diff: a value for the angle difference between the current angle and the next angle the robot will be at. 
     '''
     def __init__(self):
         super().__init__("agent")
@@ -71,12 +71,15 @@ class Agent(Node):
         # next 
         self.next_y = 0
         self.next_angle = -1 * math.pi / 2
-        
+        # threshold 
         self.threshold = 0.1
+        # object (x,y)
+        self.object_x = 3
+        self.object_y = 20
         
         self.move = Twist()
         self.state = State.MOVE_STRAIGHT_X_RIGHT
-
+        # publishers and subscribers 
         self.odom_sub = self.create_subscription(
             Odometry, "odom", self.process_odom, 10
         )
@@ -84,19 +87,13 @@ class Agent(Node):
         self.brain_sub = self.create_subscription(
             UInt32MultiArray, "map_path", self.parse_map_bounds, 10
         )
-
         print(f"ROBOT BOUNDS {self.max_x, self.max_y}")
-        ## orienting robot in direction of most weighted/closest objects
-        
-        self.threshold = 0.1
         self.odom_sub = self.create_subscription(
             Odometry, "odom", self.process_odom, 10
         )
-        self.state = State.MOVE_STRAIGHT_X_RIGHT
+        # timer 
         timer_period = 1
         self.timer = self.create_timer(timer_period, self.run_loop)
-        self.object_x = 3
-        self.object_y = 20
         
         self.distance_diff = self.max_x
         self.angle_diff = math.pi / 2
