@@ -13,19 +13,19 @@ class Brain(Node):
     """
     Ros2 Node that instantiates a "centralized" brain who communicates to different robots. Capabilities include:
         - Using transforms to track each robot's location in the map frame
-        - Splitting given map dimensions and publishing corresponding information to each robot about its path        -
+        - Splitting a given map's dimensions for a particular number of robots
+        - publishing corresponding information to each robot about its map bounds 
+
     """
 
     def __init__(self):
         super().__init__("main_brain")
         # loading map node to obtain information about map
         self.map = LoadMap(self)
-
         # the initial pose of each neato in the map frame
         self.map_1_init_pose = []
         self.map_2_init_pose = []
         self.map_3_init_pose = []
-
         # the position of each neato in terms of the map frame
         self.map_1_pose = []
         self.map_2_pose = []
@@ -40,16 +40,16 @@ class Brain(Node):
         #         UInt32MultiArray, f"{name.value}/map_path", 10
         #     )
 
-        # self.ally_subscriber = self.create_subscription(
-        #     Odometry, f"ally/odom", self.ruhroh(Names.ALLY), 10
-        # )
+        # hard-coded subscribers/publishers for two robots 
+        self.ally_subscriber = self.create_subscription(
+            Odometry, "ally/odom", self.ruhroh(Names.ALLY), 10
+        )
         self.ally_publisher = self.create_publisher(
             UInt32MultiArray, "ally/map_path", 10
         )
-
-        # self.billy_subscriber = self.create_subscription(
-        #     Odometry, f"billy/odom", self.ruhroh(Names.BILLY), 10
-        # )
+        self.billy_subscriber = self.create_subscription(
+            Odometry, "billy/odom", self.ruhroh(Names.BILLY), 10
+        )
         self.billy_publisher = self.create_publisher(
             UInt32MultiArray, "billy/map_path", 10
         )
@@ -79,11 +79,9 @@ class Brain(Node):
                 return self.neato1_transform
             case Names.BILLY:
                 return self.neato2_transform
-            # case 3:
-            #     return self.neato3_transform
             case default:
                 raise Exception(
-                    "Number of neatos to initialize exceeds what brain has been scaffolded to handle."
+                    "name of robot is not recognized."
                 )
 
     def split_map(self, numneato):
@@ -104,30 +102,24 @@ class Brain(Node):
         map_height_meters = (height_pixels - 1) * self.map.map_resolution
 
         # how much distance given to each neato
-        # width_per_neato = int(map_width_meters / numneato)
-        # height_per_neato = int(map_height_meters / numneato)
+        width_per_neato = int(map_width_meters / numneato)
+        height_per_neato = int(map_height_meters / numneato)
 
-        width_per_neato1 = int(3)
-        height_per_neato1 = int(2)
-        width_per_neato2 = int(1)
-        height_per_neato2 = int(1)
-
-        # publishing to each neato its obunds
+        # publishing to each neato its bounds
         map_bounds_neato1 = UInt32MultiArray()
         map_bounds_neato1.data = [
-            width_per_neato1,
-            height_per_neato1,
-        ]  # order: bot left corner, bot right corner, top left corner, top right corner
+            width_per_neato,
+            height_per_neato,
+        ]
 
         map_bounds_neato2 = UInt32MultiArray()
         map_bounds_neato2.data = [
-            width_per_neato2,
-            height_per_neato2,
+            width_per_neato,
+            height_per_neato,
         ]
+        # publish the map bounds to each robot
         self.ally_publisher.publish(map_bounds_neato1)
         self.billy_publisher.publish(map_bounds_neato2)
-
-        # giving each neato its bounds in terms of its own odom frame (aka, since mvp all starts the neatos where we want them, i give them all the same coord bounding boxes)
 
     def neato1_transform(self, msg: Odometry):
         """
@@ -266,7 +258,7 @@ class Brain(Node):
         A looped function that is used to test/run the functions.
         """
         print("hi!")
-        self.split_map(2)
+        self.split_map(2) # 2 robots are instantiated to split the map 
 
 
 def main(args=None):
