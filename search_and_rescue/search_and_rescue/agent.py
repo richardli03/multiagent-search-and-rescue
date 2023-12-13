@@ -9,12 +9,9 @@ from search_and_rescue.odom_helper import (
 )
 from enum import Enum
 import math
-import time
 from nav_msgs.msg import Odometry
-from .constants import Names
 
 NEATO_LENGTH = 0.5
-
 
 class State(Enum):
     MOVE_STRAIGHT_X_RIGHT = "move straight in x direction right"
@@ -30,32 +27,59 @@ class State(Enum):
 
 
 class Agent(Node):
+    '''
+    Represents a singular "agent" or neato meant for traversing a given map and interacting with a higher, centralized "brain"
+    that commands multiple established agents. 
+
+    Attributes:
+        - odom: pose of the robot in the odometry frame.
+        - init_x: the x-coordinate that the robot initially starts at in the odometry frame. 
+        - init_y: the y-coordinate that the robot initially starts at in the odometry frame.
+        - current_x: the x-coordinate that the robot is currently at in the odometry frame.
+        - current_y: the y-coordinate that the robot is currently at in the odometry frame.
+        - next_y: the y-coordinate that the robot will go to next in the odometry frame.
+        - max_x: the x-coordinate that represents the highest bound that the robot can traverse to in the odometry frame.
+        - max_y: the y-coordinate that represents the highest bound that the robot can traverse to in the odometry frame.
+        - linear_speed: the velocity that the robot will run at. 
+        - angular_speed: the velocity that the robot will turn at.
+        - current_angle: the current angle that the robot is at in the odometry frame. 
+        - next_angle: the next angle that the robot will turn to in the odometry frame. 
+    '''
     def __init__(self):
         super().__init__("agent")
+        self.odom = None
+        # initial (x,y)
+        self.init_x = 0
+        self.init_y = 0
+        # current (x,y, theta)
+        self.current_x = 0
+        self.current_y = 0
+        self.current_angle = 0
+        # maximum (x,y)
+        self.max_x = 2
+        self.max_y = 5
+        # speeds
+        self.linear_speed = 0.3 
+        self.angular_speed = 0.3
+        # next 
+        self.next_y = 0
+        self.next_angle = -1 * math.pi / 2
+        ## orienting robot in direction of most weighted/closest objects
+        
+        self.threshold = 0.1
         self.odom_sub = self.create_subscription(
             Odometry, "odom", self.process_odom, 10
         )
-        self.odom = None
         self.state = State.MOVE_STRAIGHT_X_RIGHT
         self.publisher = self.create_publisher(Twist, "cmd_vel", 10)
         self.brain_sub = self.create_subscription(UInt32MultiArray, "map_path", self.parse_map_bounds, 10)
-        self.init_x = 0
-        self.init_y = 0
-        self.current_x = 0
-        self.current_y = 0
-        self.next_y = 0
-        self.max_x = 2
-        self.max_y = 5
-        self.linear_speed = 0.3  # CHANGE VALUE
-        self.angular_speed = 0.3
-        self.current_angle = 0
-        self.next_angle = -1 * math.pi / 2
-        ## orienting robot in direction of most weighted/closest objects
+
         timer_period = 1
-        self.threshold = 0.1
         self.timer = self.create_timer(timer_period, self.run_loop)
         self.object_x = 3
         self.object_y = 20
+        
+        self.move = Twist()
         self.distance_diff = self.max_x
         self.angle_diff = math.pi / 2
 
