@@ -18,13 +18,13 @@ import os
 def generate_launch_description():
     robot_1 = {
         "name": "ally",
-        "ip": "192.168.16.64",
+        "ip": "192.168.16.124",
         "video_port": "5011",
         "sensor_port": "7777",
     }
     robot_2 = {
         "name": "billy",
-        "ip": "192.168.16.55",
+        "ip": "192.168.16.90",
         "video_port": "5013",
         "sensor_port": "7778",
     }
@@ -74,6 +74,7 @@ def generate_launch_description():
                         remappings=[
                             ("/cmd_vel", "ally/cmd_vel"),
                             ("/odom", "ally/odom"),
+                            ("/map_path", "ally/map_path"),
                         ],
                         output={
                             "stdout": "screen",
@@ -87,6 +88,19 @@ def generate_launch_description():
                         remappings=[
                             ("/cmd_vel", "billy/cmd_vel"),
                             ("/odom", "billy/odom"),
+                            ("/map_path", "billy/map_path"),
+                        ],
+                        output={
+                            "stdout": "screen",
+                            "stderr": "screen",
+                        },
+                    ),
+                    Node(
+                        package="search_and_rescue",
+                        executable="mainbrain",
+                        name="mvmt3",
+                        remappings=[
+                            # ("","")
                         ],
                         output={
                             "stdout": "screen",

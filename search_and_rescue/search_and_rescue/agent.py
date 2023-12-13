@@ -12,6 +12,7 @@ import math
 import time
 from nav_msgs.msg import Odometry
 from .constants import Names
+from random import randint
 
 NEATO_LENGTH = 0.5
 
@@ -47,8 +48,11 @@ class Agent(Node):
         self.current_x = 0
         self.current_y = 0
         self.next_y = 0
+        ####
         self.max_x = 2
-        self.max_y = 5
+        self.max_y = 3
+        print(f"ROBOT BOUNDS {self.max_x, self.max_y}")
+        ####
         self.linear_speed = 0.3  # CHANGE VALUE
         self.angular_speed = 0.3
         self.current_angle = 0
@@ -81,6 +85,9 @@ class Agent(Node):
         """
         self.max_x = msg.data[0]
         self.max_y = msg.data[1]
+
+        print(f"max x: {self.max_x}")
+        print(f"max y: {self.max_y}")
 
     def move_straight(self):
         """
@@ -209,7 +216,8 @@ class Agent(Node):
         )
         self.current_angle = yaw_z
         print(f"angle: {self.current_angle * 180 / math.pi}")
-
+        print(f"max_x: {self.max_x}")
+        print(f"max_y: {self.max_y}")
         # calling choose state to get robot movement started, then moving robot accordingly.
         self.choose_state()
         print(self.state)
