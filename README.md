@@ -28,7 +28,7 @@ The system works, and results can be found on our website [here](https://sites.g
 While this project is operational, our team had a lot of additional goals we ran out of time to pursue. Here are some things we also wanted to pursue: 
 
 1. A full demo from top to bottom. Our system is technically capable of taking a space that is mapped with LIDAR and splitting it apart, so it'd be cool to see that work from top-to-bottom. Unfortunately, we had to scale down the map that we had already scanned because we didn't have a space that was 9 meters wide. 
-2. A more complex space-division system. Our current system just tries to split the space in "half" by dividing the `x` and `y` limits by 2. There are a few glaring issues with this, namely that it will rarely divide a non-rectangular space evenly. 
+2. A more complex space-division system. Our current system just tries to split the space in "half" by dividing the `x` limit by 2. There are a few glaring issues with this, namely that it will rarely divide a non-rectangular space evenly. 
 3. A system that automatically moves the Neatos to their correct starting position before searching. Right now the Neatos need to be manually moved to their starting location. 
 4. A defined behavior once the object is found. Something we tossed around initially was having all of the Neatos path to the object of interest once it was found, but we didn't get the chance to implement it. 
 5. A graph-theory based search system. We started an implementation of a search alg [-- TODO ANMOL --]
