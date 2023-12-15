@@ -24,9 +24,9 @@ def yaml_dict(map_name):
     }
     return yaml_dict
 
-new_map = vertical_split_map_gen((500,1000), 5)
+new_map = vertical_split_map_gen((200,400), 2)
 
-map_file_name = 'new_map.pgm'
+map_file_name = 'graph_nav.pgm'
 
 cv2.imwrite(map_file_name, new_map)
 

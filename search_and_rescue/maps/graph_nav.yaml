@@ -1,0 +1,7 @@
+free_thresh: 0.25
+image: graph_nav.pgm
+mode: trinary
+negate: 0
+occupied_thresh: 0.65
+origin: [-12.5, -25.0, 0.0]
+resolution: 0.05
