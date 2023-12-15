@@ -1,5 +1,5 @@
 # multiagent-search-and-rescue
-a centralized multiagent system designed to efficiently search a space to find a target.
+The project is a centralized multiagent system designed to efficiently search a space to find a target.
 
 ## Table of Contents
 - [multiagent-search-and-rescue](#multiagent-search-and-rescue)
