@@ -36,4 +36,5 @@ While this project is operational, our team had a lot of additional goals we ran
 3. A system that automatically moves the Neatos to their correct starting position before searching. Right now the Neatos need to be manually moved to their starting location. 
 4. A defined behavior once the object is found. Something we tossed around initially was having all of the Neatos path to the object of interest once it was found, but we didn't get the chance to implement it. 
 5. A graph-theory based search system. We have started implementing a graph-theory-based search algorithm. However, we need to integrate it with the neatos infrastructure and include additional features like dynamic goal positions and independent searching.
+6. A multi-agent simulator. Our current simulator, Gazebo, does not have capabilities to visualize several robots at once. Having this setup in the future would greatly increase productivity and ease of testing since we had to test on physical robots and physically move their positions to reset a run. 
 
