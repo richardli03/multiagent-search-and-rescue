@@ -31,6 +31,5 @@ While this project is operational, our team had a lot of additional goals we ran
 2. A more complex space-division system. Our current system just tries to split the space in "half" by dividing the `x` limit by 2. There are a few glaring issues with this, namely that it will rarely divide a non-rectangular space evenly. 
 3. A system that automatically moves the Neatos to their correct starting position before searching. Right now the Neatos need to be manually moved to their starting location. 
 4. A defined behavior once the object is found. Something we tossed around initially was having all of the Neatos path to the object of interest once it was found, but we didn't get the chance to implement it. 
-5. A graph-theory based search system. We started an implementation of a search alg [-- TODO ANMOL --]
-
+5. A graph-theory based search system. We have started implementing a graph-theory-based search algorithm. However, we need to integrate it with the neatos infrastructure and include additional features like dynamic goal positions and independent searching.
 
