@@ -20,7 +20,6 @@ Then, to run our system, run `ros2 launch search_and_rescue start_multi.py`. To 
 - ros2
 - numpy
 - scikit-learn
-#### Dependencies for Graph Algorithm
 - networkx
 - cv2
 - matplotlib
