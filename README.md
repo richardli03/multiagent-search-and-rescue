@@ -20,7 +20,12 @@ Then, to run our system, run `ros2 launch search_and_rescue start_multi.py`. To 
 - ros2
 - numpy
 - scikit-learn
-  
+Dependencies for Graph Algorithm
+- networkx
+- cv2
+-matplotlib
+-heapq
+
 ## Results:
 The system works, and results can be found on our website [here](https://sites.google.com/view/comprobo23-search-and-rescue/home)
 
